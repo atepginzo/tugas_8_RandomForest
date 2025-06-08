@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Klasifikasi Varietas Biji Gandum</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body {
+            background-color: #ffffff !important;
+        }
+    </style>
+</head>
+<body>
+<div class="container py-5">
+
+    <!-- Judul Halaman -->
+    <div class="text-center mb-5">
+        <h1 class="fw-bold ">Klasifikasi Varietas Biji Gandum</h1>
+        <p class="text-muted">Menggunakan Algoritma Random Forest</p>
+    </div>
+
+    <!-- Form Input -->
+    <div class="card shadow-lg border-0 mb-5">
+        <div class="card-body">
+            <h5 class="card-title mb-4">Masukkan Nilai Fitur</h5>
+            <form method="POST">
+                {% if error %}
+                <div class="alert alert-danger">{{ error }}</div>
+                {% endif %}
+
+                {% for f in features %}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">{{ f }}</label>
+                    <select class="form-select" name="{{ f }}" required>
+                        <option value="" disabled selected>-- Pilih nilai --</option>
+                        {% for val in feature_options[f] %}
+                        <option value="{{ val }}">{{ val }}</option>
+                        {% endfor %}
+                    </select>
+                    <small class="text-muted">Rentang nilai: {{ feature_ranges[f][0] }} – {{ feature_ranges[f][1] }}</small>
+                </div>
+                {% endfor %}
+
+                <button type="submit" class="btn btn-primary mt-3 w-100"> Klasifikasikan</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Autofill Baris -->
+    <div class="card mb-5 shadow-sm border-0">
+        <div class="card-body">
+            <label class="form-label fw-semibold">Pilih Baris Data (Autofill):</label>
+            <select class="form-select mb-2" id="row-autofill">
+                <option value="" selected>-- Pilih baris dari dataset --</option>
+                {% for row in dataset_rows_full %}
+                <option value="{{ loop.index0 }}">Baris {{ loop.index }}: {{ row[:-1]|join(', ') }}</option>
+                {% endfor %}
+            </select>
+            <small class="text-muted">Autofill akan mengisi semua input berdasarkan baris dataset yang dipilih.</small>
+        </div>
+    </div>
+
+    <!-- Visualisasi -->
+    <div class="mb-5">
+        <h4 class="mb-3"> Visualisasi Model</h4>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <img src="/visualizations/class_distribution.png" alt="Distribusi Kelas" class="card-img-top rounded-top">
+                    <div class="card-body text-center">
+                        <strong>Distribusi Kelas</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <img src="/visualizations/confusion_matrix.png" alt="Confusion Matrix" class="card-img-top rounded-top">
+                    <div class="card-body text-center">
+                        <strong>Confusion Matrix</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <img src="/visualizations/feature_importance.png" alt="Feature Importance" class="card-img-top rounded-top">
+                    <div class="card-body text-center">
+                        <strong>Feature Importance</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Dataset -->
+    <div>
+        <h4 class="mb-3"> Seluruh Data (seeds_dataset.csv)</h4>
+        <div class="table-responsive mb-3">
+            <table class="table table-bordered table-hover table-striped align-middle">
+                <thead class="table-primary text-center">
+                    <tr>
+                        {% for col in dataset_columns %}
+                        <th>{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in dataset_rows_full %}
+                    <tr>
+                        {% for val in row %}
+                        <td>{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="text-muted small">Menampilkan seluruh data sebagai referensi input dan fitur autofill.</p>
+    </div>
+
+</div>
+
+<!-- Script Autofill -->
+<script>
+const dataset = {{ dataset_rows_full|tojson }};
+const features = {{ features|tojson }};
+document.getElementById('row-autofill').addEventListener('change', function () {
+    const idx = parseInt(this.value);
+    if (!isNaN(idx)) {
+        const row = dataset[idx];
+        features.forEach(function (f, i) {
+            const sel = document.querySelector(`select[name='${f}']`);
+            if (sel) sel.value = row[i];
+        });
+    }
+});
+</script>
+</body>
+</html>
