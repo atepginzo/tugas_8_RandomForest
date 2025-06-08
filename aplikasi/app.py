@@ -6,7 +6,7 @@ from flask import Flask, render_template, request
 app = Flask(__name__)
 
 # Load model and scaler
-MODEL_PATH = os.path.join(os.path.dirname(__file__), '..', 'rf_model.joblib')
+MODEL_PATH = os.path.join(os.path.dirname(__file__), '..', 'src', 'rf_model.joblib')
 model, scaler = joblib.load(MODEL_PATH)
 
 # Feature names (in order)
@@ -92,5 +92,4 @@ def show_img(img):
     return send_from_directory('../visualizations', img)
 
 if __name__ == '__main__':
-    app.run()
-
+    app.run(debug=True)
